@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <!-- Parent ContentType: List View Style (0x010100734778F2B7DF462491FC91844AE431CF) -->
+  <ContentType ID="0x010100734778F2B7DF462491FC91844AE431CF00A75E6C44C90B436D9EB06282BF82FA90" Name="ContentType2" Group="Custom Content Types" Description="My Content Type" Inherits="TRUE" Version="0">
+    <FieldRefs>
+      <FieldRef ID="{038D1503-4629-40f6-ADAF-B47D1AB2D4FE}" DisplayName="Name" Name="Company" />
+    </FieldRefs>
+  </ContentType>
+</Elements>

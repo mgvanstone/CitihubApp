@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="1.0.0.0" Id="eb218b60-9625-4ec6-96b0-7c967a0daea4" solutionId="eb218b60-9625-4ec6-96b0-7c967a0daea4" resetWebServer="false" sharePointProductVersion="16.0" name="CitihubApp" xmlns="http://schemas.microsoft.com/VisualStudio/2008/SharePointTools/PackageModel">
+  <features>
+    <featureReference itemId="1c1be79b-1df8-4a5f-8b4f-06dc3e5e7ff1" />
+    <featureReference itemId="1b5ea960-e221-47b5-9bef-98ee457bd3fb" />
+  </features>
+</package>
