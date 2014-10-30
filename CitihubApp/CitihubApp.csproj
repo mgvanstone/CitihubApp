@@ -45,6 +45,8 @@
   <ItemGroup>
     <Content Include="ContentType1\Elements.xml" />
     <Content Include="ContentType2\Elements.xml" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Elements.xml" />
     <Content Include="Features\Feature2\Feature2.Template.xml">
       <DependentUpon>Feature2.feature</DependentUpon>
     </Content>
@@ -52,6 +54,10 @@
     <Content Include="List1\List1Instance\Elements.xml" />
     <Content Include="List1\Schema.xml" />
     <Content Include="List2\Elements.xml" />
+    <Content Include="Pages\AddClient.aspx" />
+    <Content Include="Pages\AddProject.aspx" />
+    <Content Include="Pages\Default.aspx" />
+    <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="SiteColumn1\Elements.xml" />
     <None Include="Add Project\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{13568e05-a498-4f99-83ac-2fc24263b47a}</SharePointProjectItemId>
@@ -95,7 +101,10 @@
       <OpcRelationship>feature-elementmanifest</OpcRelationship>
     </Content>
     <Content Include="Pages\Elements.xml" />
-    <Content Include="Pages\Default.aspx" />
+    <Content Include="Pages\AddSow.aspx" />
+    <None Include="SharePointProjectItem.spdata">
+      <SharePointProjectItemId>{743e3caa-c351-4624-b76b-b543ae3981c2}</SharePointProjectItemId>
+    </None>
     <None Include="SiteColumn1\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{cab7540e-9288-4069-99a2-3603c2b2fa2e}</SharePointProjectItemId>
     </None>
@@ -155,6 +164,17 @@
     <AppManifestFile Include="AppManifest.xml">
       <SubType>Designer</SubType>
     </AppManifestFile>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="IISHandler1.cs" />
+    <Compile Include="WebCustomControl1.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

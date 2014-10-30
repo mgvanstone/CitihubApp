@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Elements xmlns="http://schemas.microsoft.com/sharepoint/">
   <Module Name="Pages">
+    <File Path="Pages\AddSow.aspx" Url="Pages/AddSow.aspx" ReplaceContent="TRUE" />
+    <File Path="Pages\AddProject.aspx" Url="Pages/AddProject.aspx" ReplaceContent="TRUE" />
     <File Path="Pages\Default.aspx" Url="Pages/Default.aspx" ReplaceContent="TRUE" />
+    <File Path="Pages\AddClient.aspx" Url="Pages/AddClient.aspx" ReplaceContent="TRUE" />
   </Module>
 </Elements>

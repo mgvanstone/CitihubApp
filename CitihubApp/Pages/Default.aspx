@@ -1,48 +1,16 @@
-﻿<%-- The following 4 lines are ASP.NET directives needed when using SharePoint components --%>
+﻿<%@ Page language="C#" MasterPageFile="~masterurl/default.master" Inherits="Microsoft.SharePoint.WebPartPages.WebPartPage, Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register Tagprefix="WebPartPages" Namespace="Microsoft.SharePoint.WebPartPages" Assembly="Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
-<%@ Page Inherits="Microsoft.SharePoint.WebPartPages.WebPartPage, Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" MasterPageFile="~masterurl/default.master" Language="C#" %>
-
-<%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-<%@ Register TagPrefix="WebPartPages" Namespace="Microsoft.SharePoint.WebPartPages" Assembly="Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-<%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-
-<%-- The markup and script in the following Content element will be placed in the <head> of the page --%>
-<asp:Content ContentPlaceHolderID="PlaceHolderAdditionalPageHead" runat="server">
-    <script type="text/javascript" src="../Scripts/jquery-1.9.1.min.js"></script>
-    <script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
-    <script type="text/javascript" src="/_layouts/15/sp.js"></script>
-    <meta name="WebPartPageExpansion" content="full" />
-
-    <!-- Add your CSS styles to the following file -->
-    <link rel="Stylesheet" type="text/css" href="../Content/App.css" />
-
-    <!-- Add your JavaScript to the following file -->
-    <script type="text/javascript" src="../Scripts/App.js"></script>
+<asp:Content ContentPlaceHolderId="PlaceHolderAdditionalPageHead" runat="server">
+    <SharePoint:ScriptLink name="sp.js" runat="server" OnDemand="true" LoadAfterUI="true" Localizable="false" />
 </asp:Content>
 
-<%-- The markup in the following Content element will be placed in the TitleArea of the page --%>
-<asp:Content ContentPlaceHolderID="PlaceHolderPageTitleInTitleArea" runat="server">
-    Citihub App
-</asp:Content>
-
-<%-- The markup and script in the following Content element will be placed in the <body> of the page --%>
-<asp:Content ContentPlaceHolderID="PlaceHolderMain" runat="server">
-
+<asp:Content ContentPlaceHolderId="PlaceHolderMain" runat="server">
+    <WebPartPages:WebPartZone runat="server" FrameType="TitleBarOnly" ID="full" Title="loc:full" /> 
     <div>
-<p>
-<b>Project List</b>
-<br />
-<select style="height:300px; width:310px" multiple="multiple" id="selectListItems"></select>
-</p>
-<br />
-<p><b>Add Project</b></p>
-Project Name:<input id="projectName" type="text" value="Enter a project name" /><br />
-<input id="addProjectButton" type="button" value="AddProject" onclick="addProject()"/>
-<br />
-<p><b>Upload a file</b></p>
-Select File:<input id="getFile" type="file"/><br />
-SP File name: <input id="displayName" type="text" value="" /><br />
-<input id="addFileButton" type="button" value="Upload File" onclick="XXuuu()"/>
-</div>
-
+    <a href="/sites/CitihubDev/CitihubApp/Pages/AddSow.aspx" id="addSoW">Add SoW</a><br /><br />
+    <a href="/sites/CitihubDev/CitihubApp/Pages/AddProject.aspx" id="addProject">Add Project</a>
+    </div>
 </asp:Content>

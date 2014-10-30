@@ -15,7 +15,24 @@ getQueryStringParameter("SPAppWebUrl"));
     // SP.RequestExecutor.js to make cross-domain requests
 
     $.getScript(scriptbase + "SP.RequestExecutor.js", loadPage);
+
 });
+
+function setup() {
+    //Get the URI decoded URLs.
+    var args = SP.UI.ModalDialog.get_childDialog().get_args();
+    hostweburl = args.hosturl;
+    console.log("hostweburl " + hostweburl);
+    appweburl = args.appurl;
+    // Resources are in URLs in the form:
+    // web_url/_layouts/15/resource
+    var scriptbase = hostweburl + "/_layouts/15/";
+    // Load the js file and continue to load the page with information about the list items.
+    // SP.RequestExecutor.js to make cross-domain requests
+
+    $.getScript(scriptbase + "SP.RequestExecutor.js", loadPage);
+}
+
 // Utilities
 // Retrieve a query string value.
 // For production purposes you may want to use a library to handle the query string.
@@ -27,15 +44,96 @@ function getQueryStringParameter(paramToRetrieve) {
     }
 }
 function loadPage() {
-   getListItems();
+ //   getProjectListItems();
+    getSoWListItems();
+    getClientListItems();
+    dumpLookup();
 }
-//Retrieve all of the list items
-function getListItems() {
+
+function OpenDialog() {
+    var options = SP.UI.$create_DialogOptions();
+    console.log("OpenDialog");
+    options.url = "/sites/CitihubDev/CitihubApp/Pages/AddProject.aspx";
+    options.width = 1000;
+    options.height = 800;
+    options.dialogReturnValueCallback = myDialogCallback;
+    var myArgs = { appurl: appweburl, hosturl: hostweburl };
+    options.args = myArgs;
+
+    SP.UI.ModalDialog.showModalDialog(options);
+}
+
+function OpenClientDialog() {
+    var options = SP.UI.$create_DialogOptions();
+    console.log("OpenClient");
+    options.url = "/sites/CitihubDev/CitihubApp/Pages/AddClient.aspx";
+    options.width = 1000;
+    options.height = 800;
+    options.dialogReturnValueCallback = myClientDialogCallback;
+    var myArgs = { appurl: appweburl, hosturl: hostweburl };
+    options.args = myArgs;
+
+    SP.UI.ModalDialog.showModalDialog(options);
+}
+
+function myDialogCallback(result, response) {
+    //alert("Project added");
+    if (result == 1) {
+        alert(response.message);
+        getProjectForClient(response.message);
+    }
+}
+
+function myClientDialogCallback(result, response) {
+    //alert("Project added");
+    if (result == 1) {
+        getClientListItems();
+    }
+}
+
+function SubmitClicked(result) {
+    var results = {
+        message: result,
+        anothervalue: "Submit"
+    };
+    SP.UI.ModalDialog.commonModalDialogClose(SP.UI.DialogResult.OK, results);
+}
+
+function getSoWListItems() {
     var executor;
     // Initialize the RequestExecutor with the app web URL.
     executor = new SP.RequestExecutor(appweburl);
     executor.executeAsync({
-        url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Projects')/items?@target='" + hostweburl + "'",
+        url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('SoW')/items?@target='" + hostweburl + "'",
+        method: "GET",
+        headers: {
+            "Accept": "application/json; odata=verbose"
+        },
+        success: getSoWListItemsSuccessHandler,
+        error: getListItemsErrorHandler
+    });
+}
+
+function getSoWListItemsSuccessHandler(data) {
+    var jsonObject = JSON.parse(data.body);
+    console.log("SoW");
+    console.log(data.body);
+    console.log("SoW end");
+}
+
+function readProjectsForClient() {
+
+    var clientname = jQuery('#selectClientListItems option:selected').text();
+    getProjectForClient(clientname);
+}
+
+//Retrieve all of the list items
+function getProjectForClient(clientname) {
+    var executor;
+    // Initialize the RequestExecutor with the app web URL.
+    executor = new SP.RequestExecutor(appweburl);
+    executor.executeAsync({
+        url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Projects')/items?@target='" + hostweburl + "'&expand=Client/Name&$filter=Client/Name eq '" + clientname + "'",
         method: "GET",
         headers: {
             "Accept": "application/json; odata=verbose"
@@ -47,6 +145,8 @@ function getListItems() {
 //Populate the selectListItems control after retrieving all of the list items.
 function getListItemsSuccessHandler(data) {
     var jsonObject = JSON.parse(data.body);
+
+    //  console.log(data.body);
     var selectListItems = document.getElementById("selectListItems");
     if (selectListItems.hasChildNodes()) {
         while (selectListItems.childNodes.length >= 1) {
@@ -56,7 +156,8 @@ function getListItemsSuccessHandler(data) {
     var results = jsonObject.d.results;
     for (var i = 0; i < results.length; i++) {
         var selectOption = document.createElement("option");
-        selectOption.value = results[i].Title;
+        console.log("Found this project: " + results[i].Id + " " + results[i].Title);
+        selectOption.value = results[i].Id;
         selectOption.innerText = results[i].Title;
         selectListItems.appendChild(selectOption);
     }
@@ -65,14 +166,67 @@ function getListItemsErrorHandler(data, errorCode, errorMessage) {
     alert("Could not get list items: " + errorMessage);
 }
 
-function addProject() {
-    var projName = jQuery('#projectName').val();
-    //alert("project " + projName);
-    addListItem("Projects", projName);
-    location.reload();
-    addFolderToDirectory(projName);
+//Retrieve all of the list items
+function getClientListItems() {
+    var executor;
+    // Initialize the RequestExecutor with the app web URL.
+    executor = new SP.RequestExecutor(appweburl);
+    executor.executeAsync({
+        url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Clients')/items?@target='" + hostweburl + "'",
+        method: "GET",
+        headers: {
+            "Accept": "application/json; odata=verbose"
+        },
+        success: getClientListItemsSuccessHandler,
+        error: getListItemsErrorHandler
+    });
+}
+//Populate the selectListItems control after retrieving all of the list items.
+function getClientListItemsSuccessHandler(data) {
+    var jsonObject = JSON.parse(data.body);
+    var selectListItems = document.getElementById("selectClientListItems");
+    if (selectListItems.hasChildNodes()) {
+        while (selectListItems.childNodes.length >= 1) {
+            selectListItems.removeChild(selectListItems.firstChild);
+        }
+    }
 
-    
+    var selectOption = document.createElement("option");
+    selectOption.value = "None Selected";
+    selectOption.innerText = "None Selected";
+    selectListItems.appendChild(selectOption);
+
+    var results = jsonObject.d.results;
+    for (var i = 0; i < results.length; i++) {
+        var selectOption = document.createElement("option");
+        selectOption.value = results[i].Id;
+        selectOption.innerText = results[i].Title;
+        selectListItems.appendChild(selectOption);
+    }
+}
+
+function addProject(projName, desc) {
+
+    console.log("addProject " + projName);
+    addFolderToDirectory(projName);
+    addListItem("Projects", projName, desc, "");
+    console.log('Project added');
+}
+
+
+function addClient(name) {
+
+    console.log("addClient " + name);
+   // addFolderToDirectory(name);
+    addClientListItem("Clients", name);
+    //console.log('Client added');
+}
+
+function addNewSoW(projName, clientId, doclink, status, project) {
+
+    console.log("addSoW " + projName);
+    addSoWItem("SoW", projName, clientId, doclink, status, project);
+    //alert('SoW added');
 }
 
 function addFolder() {
@@ -82,17 +236,21 @@ function addFolder() {
 }
 
 // Adding a list item with the metadata provided
-function addListItem(listname, projName) {
+function addListItem(listname, projName, description, doclink) {
 
     // Prepping our update
     //   var item = $.extend({
     //       "__metadata": { "type": "SP.Data.ProjectsListItem" }
     //   }, { 'Title': projName });
 
+    console.log("addListItem");
+    doclink = "http://www.ibm.com";
+
     //Metadata to update.
     var item = {
         "__metadata": { "type": "SP.Data.ProjectsListItem" },
-        "Title": projName
+        "Title": projName,
+        "Description": description
     };
 
     var requestBody = JSON.stringify(item);
@@ -107,6 +265,8 @@ function addListItem(listname, projName) {
 
     var executor;
     // Initialize the RequestExecutor with the app web URL.
+    // var longurl = appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Projects')/items?@target='" + hostweburl + "'";
+    // console.log(longurl);
     executor = new SP.RequestExecutor(appweburl);
     executor.executeAsync({
         url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Projects')/items?@target='" + hostweburl + "'",
@@ -115,12 +275,111 @@ function addListItem(listname, projName) {
         headers: requestHeaders,
         body: JSON.stringify(item),
         success: function (data) {
-            alert('OK');
+            //alert('OK');
+            SubmitClicked();
         },
         error: function (data) {
-           // alert('FAILED');
+            alert('FAILED');
         }
     });
+    console.log("end addListItem");
+}
+
+// Adding a list item with the metadata provided
+function addClientListItem(listname, name) {
+
+    //Metadata to update.
+    var item = {
+        "__metadata": { "type": "SP.Data.ClientsListItem" },
+        "Title": name,
+        "Name": name
+    };
+
+    var requestBody = JSON.stringify(item);
+    var requestHeaders = {
+        "accept": "application/json;odata=verbose",
+        "X-RequestDigest": jQuery("#__REQUESTDIGEST").val(),
+        "X-HTTP-Method": "POST",
+        "content-length": requestBody.length,
+        "content-type": "application/json;odata=verbose",
+        "If-Match": "*"
+    };
+
+    var executor;
+    // Initialize the RequestExecutor with the app web URL.
+    // var longurl = appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Projects')/items?@target='" + hostweburl + "'";
+    // console.log(longurl);
+    executor = new SP.RequestExecutor(appweburl);
+    executor.executeAsync({
+        url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Clients')/items?@target='" + hostweburl + "'",
+        method: "POST",
+        contentType: "application/json;odata=verbose",
+        headers: requestHeaders,
+        body: JSON.stringify(item),
+        success: function (data) {
+            //alert('OK');
+            SubmitClicked();
+        },
+        error: function (data) {
+            alert('FAILED to add client');
+        }
+    });
+    console.log("end addClientListItem");
+}
+
+function addSoWItem(listname, sowName, clientId, doclink, status, projectId) {
+
+    // Prepping our update
+    //   var item = $.extend({
+    //       "__metadata": { "type": "SP.Data.ProjectsListItem" }
+    //   }, { 'Title': projName });
+
+    //Metadata to update.
+    var item = {
+        "__metadata": { "type": "SP.Data.SoWListItem" },
+        "Title": sowName,
+        "ClientId": clientId,
+        "Status": 'Completed', 
+        'SoW':
+            {
+                '__metadata': { 'type': 'SP.FieldUrlValue' },
+                'Description': 'Document',
+                'Url': doclink
+            },
+        "ProjectsListId": projectId
+    };
+
+    var requestBody = JSON.stringify(item);
+    var requestHeaders = {
+        "accept": "application/json;odata=verbose",
+        "X-RequestDigest": jQuery("#__REQUESTDIGEST").val(),
+        "X-HTTP-Method": "POST",
+        "content-length": requestBody.length,
+        "content-type": "application/json;odata=verbose",
+        "If-Match": "*"
+    };
+
+    var executor;
+    // Initialize the RequestExecutor with the app web URL.
+    var longurl = appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('SoW')/items?@target='" + hostweburl + "'";
+    console.log(longurl);
+    executor = new SP.RequestExecutor(appweburl);
+    executor.executeAsync({
+        url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('SoW')/items?@target='" + hostweburl + "'",
+        method: "POST",
+        contentType: "application/json;odata=verbose",
+        headers: requestHeaders,
+        body: JSON.stringify(item),
+        success: function (data) {
+            console.log('Added SoW OK');
+            //SubmitClicked();
+        },
+        error: function (data) {
+            console.log("Failed to add SoW" + data.body);
+            alert('Failed to add SoW');
+        }
+    });
+    console.log("Add SOw");
 }
 
 function addListItems() {
@@ -278,15 +537,16 @@ function onError(error) {
     alert(error.responseText);
 }
 
-function XXuuu() {
-    var fileInput = jQuery('#getFile');
-    var newName = jQuery('#displayName').val();
+function uploadDoc(fileInput, newName) {
+
+//    $('#downloadLink').show();
+    //alert("filename: " + fileName + " newName "+ newName);
 
     //var reader = new FileReader();
 
     //reader.onload = function (e) {
     //    var content = reader.result;
-   //     var content = _arrayBufferToBase64(arrayBuffer);
+    //     var content = _arrayBufferToBase64(arrayBuffer);
     //    XXuploadfile(newName, content);
     //    alert("Complete");
     //}
@@ -302,7 +562,7 @@ function XXuuu() {
         }
         XXuploadfile(newName, fileData);
     };
-   // alert(fileInput);
+    // alert(fileInput);
     reader.readAsArrayBuffer(fileInput[0].files[0]);
 }
 
@@ -317,10 +577,10 @@ function _arrayBufferToBase64(buffer) {
 }
 
 function XXuploadfile(name, content) {
-    alert("Here");
+
     var createitem = new SP.RequestExecutor(appweburl);
     createitem.executeAsync({
-       // url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Projects')/items?@target='" + hostweburl + "'",
+        // url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Projects')/items?@target='" + hostweburl + "'",
         url: appweburl + "/_api/SP.AppContextSite(@target)/web/GetFolderByServerRelativeUrl('/sites/CitihubDev/Shared Documents')/Files/Add(url='" + name + "',overwrite=true)?@target='" + hostweburl + "'",
         method: "POST",
         headers: {
@@ -330,11 +590,11 @@ function XXuploadfile(name, content) {
         contentType: "application/json;odata=verbose",
         binaryStringRequestBody: true,
         body: content,
-        success: function (e) {            
-            alert('done');
+        success: function (e) {
+            alert('File upload completed');
         },
         error: function () { alert("Error"); },
-            state: "Update"
+        state: "Update"
     });
 }
 
@@ -366,50 +626,50 @@ function getListItemsXXXX() {
 
 function addFile2() {
 
-      var executor = new SP.RequestExecutor(appweburl);
-//    executor.executeAsync({
-//        url: appweburl + "/_api/SP.AppContextSite(@target)/web/getfilebyserverrelativeurl('/sites/CitihubDev/Shared Documents/Document.docx')?@target='" + hostweburl + "'",
-//        method: "GET",
-//    headers: { "accept": "application/json; odata=verbose" },
-//    success: function (data) {
-//        alert("success: " + JSON.stringify(data));
-//    },
-//    error: function (err) {
-//        alert("error: " + JSON.stringify(err));
-//    }
-//    });
+    var executor = new SP.RequestExecutor(appweburl);
+    //    executor.executeAsync({
+    //        url: appweburl + "/_api/SP.AppContextSite(@target)/web/getfilebyserverrelativeurl('/sites/CitihubDev/Shared Documents/Document.docx')?@target='" + hostweburl + "'",
+    //        method: "GET",
+    //    headers: { "accept": "application/json; odata=verbose" },
+    //    success: function (data) {
+    //        alert("success: " + JSON.stringify(data));
+    //    },
+    //    error: function (err) {
+    //        alert("error: " + JSON.stringify(err));
+    //    }
+    //    });
 
-    
+
     executor.executeAsync({
-       url: appweburl + "/_api/SP.AppContextSite(@target)/web/getfilebyserverrelativeurl('/sites/CitihubDev/Shared Documents/filename.txt')/$value?@target='" + hostweburl + "'",
-       method: "POST",
-    body: "Updated contents of the file go here2",
-    headers: { "X-HTTP-Method":"PUT" },
-    success: function (data) {
-        alert("success: " + JSON.stringify(data));
-    },
-    error: function (err) {
-        alert("error: " + JSON.stringify(err));
-    }
+        url: appweburl + "/_api/SP.AppContextSite(@target)/web/getfilebyserverrelativeurl('/sites/CitihubDev/Shared Documents/filename.txt')/$value?@target='" + hostweburl + "'",
+        method: "POST",
+        body: "Updated contents of the file go here2",
+        headers: { "X-HTTP-Method": "PUT" },
+        success: function (data) {
+            alert("success: " + JSON.stringify(data));
+        },
+        error: function (err) {
+            alert("error: " + JSON.stringify(err));
+        }
     });
 }
 
 function addFolderToDirectory(folder) {
     // executor: The RequestExecutor object  
     // Initialize the RequestExecutor with the app web URL.  
-    var executor = new SP.RequestExecutor(appweburl);     
-   // alert("here");
+    var executor = new SP.RequestExecutor(appweburl);
+    // alert("here");
     executor.executeAsync({
         url: appweburl + "/_api/SP.AppContextSite(@target)/web/folders/add('/sites/CitihubDev/Shared Documents/" + folder + "')?@target='" + hostweburl + "'",
         method: "POST",
-    headers: { "accept": "application/json; odata=verbose" },
-    success: function (data) {
-        alert("success: " + JSON.stringify(data));
-    },
-    error: function (err) {
-       // alert("error: " + JSON.stringify(err));
-    }
-});                            
+        headers: { "accept": "application/json; odata=verbose" },
+        success: function (data) {
+            console.log("success: " + JSON.stringify(data));
+        },
+        error: function (err) {
+            alert("error: " + JSON.stringify(err));
+        }
+    });
 }
 
 function getFileBuffer() {
@@ -423,4 +683,30 @@ function getFileBuffer() {
     }
     reader.readAsArrayBuffer(fileInput[0].files[0]);
     return deferred.promise();
+}
+
+function dumpLookup() {
+    var executor;
+    // Initialize the RequestExecutor with the app web URL.
+    executor = new SP.RequestExecutor(appweburl);
+    executor.executeAsync({
+        url: appweburl + "/_api/SP.AppContextSite(@target)/web/lists/getbytitle('Clients')/items?@target='" + hostweburl + "'",
+        method: "GET",
+        headers: {
+            "Accept": "application/json; odata=verbose"
+        },
+        success: getLookupList,
+        error: getListItemsErrorHandler
+    });
+}
+//Populate the selectListItems control after retrieving all of the list items.
+function getLookupList(data) {
+    var jsonObject = JSON.parse(data.body);
+   // console.log(data.body);
+    var results = jsonObject.d.results;
+    
+    for (var i = 0; i < results.length; i++) {
+        console.log(results[i].Id);
+    }
+
 }

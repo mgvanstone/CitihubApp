@@ -25,7 +25,7 @@
       </CommandUIDefinitions>
       <CommandUIHandlers>
         <CommandUIHandler Command="Invoke_Delete ProjectButtonRequest"
-                          CommandAction="~appWebUrl/Pages/Default.aspx?{StandardTokens}&amp;SPListItemId={SelectedItemId}&amp;SPListId={SelectedListId}"/>
+                          CommandAction="~appWebUrl/Pages/AddSow.aspx?{StandardTokens}&amp;SPListItemId={SelectedItemId}&amp;SPListId={SelectedListId}"/>
       </CommandUIHandlers>
     </CommandUIExtension >
   </CustomAction>
